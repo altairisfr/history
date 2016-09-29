@@ -152,30 +152,42 @@ class THistory extends TObjetStd {
 
 		$this->entity = $conf->entity;
 		
-		$this->signature = $this->getSignatureRecursive($PDOdb );
+		if(empty($this->signature)) $this->signature = $this->getSignatureRecursive($PDOdb );
 
         return parent::save($PDOdb);
     }
 
 	
-	function getSignatureRecursive(&$PDOdb){
+	function getSignatureRecursive(&$PDOdb, $from_id = 0){
 		
 		if($this->type_object === 'payment') {
-			$signature = self::getSignature();	
+			$signature = md5( $this->type_action . self::getSignature() . $this->key_value1  );	
 			
-			$THistory = array_reverse( self::getHistory($PDOdb, 'payments', 0, true) );
-			
-			foreach($THistory as &$h) {
+			$THistory =  self::getHistory($PDOdb, 'payments', 0, true,0, 'ASC') ;
+			//var_dump($THistory);
+			foreach($THistory as $h) {
+				
+				if($from_id>0 && $h->rowid == $from_id) break; // on arrête sur un enregistrement précis pour recalculer une signature
+				
 				$signature = md5($signature. $this->type_action . $h->signature . $h->key_value1);
 			}
-			
+			//var_dump($from_id,$signature);
+			//exit($signature);
 			return $signature;
 		}
 		
 		return '';
 	} 
 
-    static function getHistory(&$PDOdb, $type_object, $fk_object, $justTheMinimum = false) {
+	function checkSignature(&$PDOdb) {
+		
+		$signature = $this->getSignatureRecursive($PDOdb, $this->getId());
+		//var_dump(array($signature , $this->signature));
+		return ($signature === $this->signature);
+		
+	}
+
+    static function getHistory(&$PDOdb, $type_object, $fk_object, $justTheMinimum = false, $limit = 0, $order = 'DESC') {
 		global $conf;
         if($type_object == 'task') $type_object = 'project_task';
 		if($type_object == 'invoice')$type_object = 'facture';
@@ -183,22 +195,24 @@ class THistory extends TObjetStd {
 		if($type_object=='deletedElement') {
 			$sql="SELECT rowid FROM ".MAIN_DB_PREFIX."history
 	         WHERE  entity=".$conf->entity." AND  type_action LIKE '%DELETE%'
-	         ORDER BY date_entry DESC";
+	         ORDER BY date_entry ".$order;
 
 		}
 		else if($type_object=='payments') {
 			$sql="SELECT rowid,signature,key_value1 FROM ".MAIN_DB_PREFIX."history
 	         WHERE entity=".$conf->entity." AND  type_action LIKE '%PAYMENT%'
-	         ORDER BY date_entry DESC";
+	         ORDER BY date_entry ".$order;
 
 		}
 		else{
 			$sql="SELECT rowid FROM ".MAIN_DB_PREFIX."history
 	         WHERE type_object='".$type_object."' AND fk_object=".(int)$fk_object."
-	         ORDER BY date_entry DESC ";
+	         ORDER BY date_entry ".$order;
 
 		}
 
+
+		if($limit > 0 )$sql.=' LIMIT '.$limit;
 
         $Tab = $PDOdb->ExecuteAsArray($sql);
 

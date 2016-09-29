@@ -33,6 +33,8 @@ HISTORY_DOLIBARR_SIGNATURE=Signature des enregistrements
 PaymentValidy=Validité des réglements
 PAYMENT_ADD_TO_BANK=Ajout du paiement dans la banque
 PAYMENT_CUSTOMER_CREATE=Paiement client créé
+PAYMENT_CUSTOMER_DELETE=Suppresion d'un paiement
 
 DeletedElement=Elements supprimés
 WholeObjectDeleted=Objet %s supprimé
+KoCheckPaymentValidity=Une erreur est détectée. La première ligne en erreur est certainement celle qui a été modifiée frauduleusement.

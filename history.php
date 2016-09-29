@@ -137,6 +137,11 @@
             ?><td class="liste_titre"><?php echo $langs->trans('Action') ?></td>
             <td class="liste_titre"><?php echo $langs->trans('WhatChanged') ?></td>
             <td class="liste_titre"><?php echo $langs->trans('User') ?></td>
+            <?php
+            if($type_object == 'payments') {
+            	echo '<td class="liste_titre">'.$langs->trans('Signature').'</td>';
+			}
+			?>
         </tr>
 
     <?php
@@ -152,6 +157,21 @@
 			            <td><?php echo $history->show_action() ?></td>
 			            <td><?php echo $history->show_whatChanged($PDOdb, false, true) ?></td>
 			            <td><?php echo $history->show_user() ?></td>
+			        </tr>
+					<?php
+
+		}
+
+		else if($type_object == 'payments') {
+			        ?>
+			        <tr class="<?php $class=($class=='impair')?'pair':'impair'; echo $class; ?>">
+			            <td><?php echo $history->get_date('date_entry','d/m/Y H:i:s'); ?></td>
+			            <td><?php echo $history->show_action() ?></td>
+			            <td><?php echo $history->show_whatChanged($PDOdb, false, true) ?></td>
+			            <td><?php echo $history->show_user() ?></td>
+			            <td><?php echo $history->signature .' ' . (  
+			            	$history->checkSignature($PDOdb) ? img_picto('Ok', 'on') : img_picto($langs->trans('KoCheckPaymentValidity'), 'off')	
+						); ?></td>
 			        </tr>
 					<?php
 
