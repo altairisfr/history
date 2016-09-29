@@ -1,13 +1,10 @@
 <?php
 
 class THistory extends TObjetStd {
-/*
- * Gestion des équipements
- * */
 
     function __construct() {
         $this->set_table(MAIN_DB_PREFIX.'history');
-        $this->add_champs('fk_object,fk_object_deleted,entity',array('type'=>'integer','index'=>true));
+        $this->add_champs('fk_object,fk_object_deleted,entity,is_certified',array('type'=>'integer','index'=>true));
         $this->add_champs('key_value1','type=float;index;');
         $this->add_champs('fk_user', 'type=entier;');
         $this->add_champs('type_object,type_action,ref,table_element', array('type'=>'string','index'=>true));
@@ -158,7 +155,7 @@ class THistory extends TObjetStd {
     }
 
 	
-	function getSignatureRecursive(&$PDOdb, $from_id = 0){
+	function getSignatureRecursive(&$PDOdb){
 		
 		if($this->type_object === 'payment') {
 			$signature = md5( $this->type_action . self::getSignature() . $this->key_value1  );	
@@ -167,7 +164,7 @@ class THistory extends TObjetStd {
 			//var_dump($THistory);
 			foreach($THistory as $h) {
 				
-				if($from_id>0 && $h->rowid == $from_id) break; // on arrête sur un enregistrement précis pour recalculer une signature
+				if($this->getId()>0 && $h->rowid == $this->getId()) break; // on arrête sur un enregistrement précis pour recalculer une signature
 				
 				$signature = md5($signature. $this->type_action . $h->signature . $h->key_value1);
 			}
@@ -181,7 +178,7 @@ class THistory extends TObjetStd {
 
 	function checkSignature(&$PDOdb) {
 		
-		$signature = $this->getSignatureRecursive($PDOdb, $this->getId());
+		$signature = $this->getSignatureRecursive($PDOdb);
 		//var_dump(array($signature , $this->signature));
 		return ($signature === $this->signature);
 		
@@ -201,6 +198,18 @@ class THistory extends TObjetStd {
 		else if($type_object=='payments') {
 			$sql="SELECT rowid,signature,key_value1 FROM ".MAIN_DB_PREFIX."history
 	         WHERE entity=".$conf->entity." AND  type_action LIKE '%PAYMENT%'
+	         ORDER BY date_entry ".$order;
+
+		}
+		else if($type_object=='payments_not_certified') {
+			$sql="SELECT rowid,signature,key_value1 FROM ".MAIN_DB_PREFIX."history
+	         WHERE entity=".$conf->entity." AND  type_action LIKE '%PAYMENT%' AND is_certified = 0
+	         ORDER BY date_entry ".$order;
+
+		}
+		else if($type_object=='payments_just_certified') {
+			$sql="SELECT rowid,signature,key_value1 FROM ".MAIN_DB_PREFIX."history
+	         WHERE entity=".$conf->entity." AND  type_action LIKE '%PAYMENT%' AND is_certified = 1
 	         ORDER BY date_entry ".$order;
 
 		}
@@ -327,4 +336,50 @@ class THistory extends TObjetStd {
 	}
 
 
+}
+
+class THistoryAutority extends TObjetStd {
+
+    function __construct() {
+        $this->set_table(MAIN_DB_PREFIX.'history_authority');
+        $this->add_champs('blockchain', array('type'=>'text')); //TODO un jour 2Go ce ne sera pas suffisant
+		$this->add_champs('signature', array('type'=>'string','index'=>true, 'length'=>128)); // might be smaller
+		
+        $this->_init_vars();
+
+        $this->start();
+
+	}
+	
+	function getBlockchainHash() {
+		
+		return md5($this->signature.$this->blockchain);
+		
+	}
+	
+	function checkBlockchain($hash) {
+		
+		return ($hash === $this->getBlockchainHash() );
+		
+	}
+	
+	function addBlock($block) {
+		
+		$this->blockchain.=$block;
+		
+	}
+	
+	function checkBlock($block) {
+		
+		if(strlen($block)!=32) return false;
+		
+		$TBlock = str_split($this->blockchain,32);
+		
+		if(!in_array($block,$TBlock)) {
+			return true;
+		}			
+		else{
+			return false;
+		}
+	}
 }

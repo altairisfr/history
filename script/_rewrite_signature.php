@@ -10,7 +10,7 @@
 
 	foreach($THistory as &$h) {
 		
-		$h->signature = $h->getSignatureRecursive($PDOdb, $h->getId());
+		$h->signature = $h->getSignatureRecursive($PDOdb);
 		$h->save($PDOdb);
 		
 		echo $h->getId().' : '.$h->signature.'</br>';

@@ -139,7 +139,31 @@
             <td class="liste_titre"><?php echo $langs->trans('User') ?></td>
             <?php
             if($type_object == 'payments') {
-            	echo '<td class="liste_titre">'.$langs->trans('Signature').'</td>';
+            	echo '<td class="liste_titre">'.$langs->trans('Signature');
+            	
+				?>
+				 <span id="blockchainstatus"></span>
+				<script type="text/javascript">
+					
+					$.ajax({
+						url : "<?php echo dol_buildpath('/history/script/check_signature.php',1) ?>"
+						,dataType:"html"
+					}).done(function(data) {
+						
+						if(data == 'hashisok') {
+							$('#blockchainstatus').html('<?php echo img_picto($langs->trans('SignatureOK'), 'on') ?>');
+						}
+						else{
+							$('#blockchainstatus').html('<?php echo img_picto($langs->trans('SignatureKO'), 'off') ?>');
+						}
+						
+					});
+					
+				</script>
+				
+				<?php
+            	
+            	echo '</td>';
 			}
 			?>
         </tr>
@@ -169,8 +193,10 @@
 			            <td><?php echo $history->show_action() ?></td>
 			            <td><?php echo $history->show_whatChanged($PDOdb, false, true) ?></td>
 			            <td><?php echo $history->show_user() ?></td>
-			            <td><?php echo $history->signature .' ' . (  
-			            	$history->checkSignature($PDOdb) ? img_picto('Ok', 'on') : img_picto($langs->trans('KoCheckPaymentValidity'), 'off')	
+			            <td><?php echo /*$history->signature .' ' .*/ (  
+			            	$history->checkSignature($PDOdb) ? img_picto('OkCheckPaymentValidity', 'on') : img_picto($langs->trans('KoCheckPaymentValidity'), 'off')	
+						).' '.(
+							$history->is_certified ? img_picto($langs->trans('AddedByAuthority'), 'info') :  img_picto($langs->trans('NotAddedByAuthorityYet'), 'info_black')
 						); ?></td>
 			        </tr>
 					<?php
