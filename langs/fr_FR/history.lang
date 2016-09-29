@@ -3,6 +3,7 @@ Module104400Desc = Historise toutes les actions faites sur un objet
 
 ATMAbout = Ce module a été développé par <a href="http://www.atm-consulting.fr" target="_blank">ATM Consulting</a><br>Vous pouvez retrouver la documentation sur notre <a href="http://wiki.atm-consulting.fr/index.php/Accueil" target="_blank">wiki</a><br><br>Pour toute question technique ou retour, contactez-nous sur <a href="mailto:support@atm-consulting.fr">support@atm-consulting.fr</a><br><br>Pour toute question commerciale, contactez-nous sur <a href="mailto:contact@atm-consulting.fr">contact@atm-consulting.fr</a> ou au +33 9 77 19 50 70<br><br>Retrouvez nos autres modules sur <a href="http://www.dolistore.com/search.php?orderby=position&orderway=desc&search_query=atm&submit_search=Rechercher" target="_blank">Dolistore</a>
 
+History = historique
 HistorySetup = Configuration du module History
 HistoryAbout = A propos du module History
 Restore=Restaurer
@@ -25,6 +26,13 @@ HISTORY_STOCK_FULL_OBJECT_ON_DELETE=Stocke l'objet à la suppression pour une re
 LINEPROPAL_UPDATE=Mise à jour de la ligne de propale
 LINEPROPAL_DELETE=Suppression de la ligne de propale
 COMPANY_DELETE=Société supprimée
+SUPPLIER_PRODUCT_BUYPRICE_DELETE=Suppression d'un prix d'achat fournisseur
+TASK_TIMESPENT_DELETE=Suppression d'un temps passé
+TASK_DELETE=Suppression d'un tâche
+HISTORY_DOLIBARR_SIGNATURE=Signature des enregistrements
+PaymentValidy=Validité des réglements
+PAYMENT_ADD_TO_BANK=Ajout du paiement dans la banque
+PAYMENT_CUSTOMER_CREATE=Paiement client créé
 
 DeletedElement=Elements supprimés
-WholeObjectDeleted=Objet complet supprimé
+WholeObjectDeleted=Objet %s supprimé

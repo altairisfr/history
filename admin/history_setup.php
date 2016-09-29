@@ -116,6 +116,17 @@ print '<input type="submit" class="button" value="'.$langs->trans("Modify").'">'
 print '</form>';
 print '</td></tr>';
 
+
+dol_include_once('/history/class/history.class.php');
+// Example with a yes / no select
+$var=!$var;
+print '<tr '.$bc[$var].'>';
+print '<td>'.$langs->trans("HISTORY_DOLIBARR_SIGNATURE").'</td>';
+print '<td align="center" width="20">&nbsp;</td>';
+print '<td align="right" width="300">';
+print THistory::getSignature();
+print '</td></tr>';
+
 print '</table>';
 
 

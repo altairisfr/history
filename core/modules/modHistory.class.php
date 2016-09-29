@@ -160,7 +160,10 @@ class modHistory extends DolibarrModules
 
             ,'task:+history:History:history@history:$user->rights->history->read:/history/history.php?type_object=task&id=__ID__'
             ,'task:-info:NU:true'
-
+ 			
+ 			,'invoice:+history:History:history@history:$user->rights->history->read:/history/history.php?type_object=invoice&id=__ID__'
+            ,'invoice:-info:NU:true'
+            
             //TODO : for dolibarr 5.0 order class will manage correctly change so can be uncomment
  			//,'order:+history:History:history@history:$user->rights->history->read:/history/history.php?type_object=order&id=__ID__'
             //,'order:-info:NU:true'
@@ -284,6 +287,8 @@ class modHistory extends DolibarrModules
 	{
 		$sql = array();
 
+		global $conf, $db;
+
         define('INC_FROM_DOLIBARR',true);
         dol_include_once('/history/config.php');
 
@@ -291,6 +296,8 @@ class modHistory extends DolibarrModules
 
         $o=new THistory($db);
         $o->init_db_by_vars($PDOdb);
+
+		THistory::getSignature();
 
 		$result=$this->_load_tables('/history/sql/');
 

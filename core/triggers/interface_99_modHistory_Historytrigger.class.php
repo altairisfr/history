@@ -135,7 +135,9 @@ class InterfaceHistorytrigger
                 if(!empty($object->{'fk_'.$type_object})) $h->fk_object = $object->{'fk_'.$type_object}; // TODO ça marche pas, pas rempli quand update line :/
             }
 			
-			if(!empty($conf->global->HISTORY_STOCK_FULL_OBJECT_ON_DELETE) && strpos($action,'DELETE')!==false) {
+			$action_to_delete = (strpos($action,'DELETE')!==false);
+			
+			if(!empty($conf->global->HISTORY_STOCK_FULL_OBJECT_ON_DELETE) && $action_to_delete) {
 				$h->object = clone $object;
 				$h->table_element = $object->table_element;
 				$h->fk_object_deleted = $object->id;
@@ -156,11 +158,40 @@ class InterfaceHistorytrigger
                 $oldObject->fetch($object->id);
                 $h->compare($object, $oldObject);    
                 */  
-                $h->what_changed = 'cf. action';
-           
+                
+                $wch = '';
+                
+                if($action_to_delete) {
+                	if(isset($object->ref)) $wch.=' ref : '.$object->ref;
+					if(isset($object->fk_product)) $wch.=' Produit : '.$object->fk_product;
+					if(isset($object->qty)) $wch.=' x '.$object->qty;
+					if(isset($object->subprice)) $wch.=' = '.$object->subprice;
+					if(isset($object->total_ht)) $wch.=' = '.$object->total_ht;
+					
+                }
+				elseif(empty($h->what_changed)) {
+					$wch = 'cf. action';	
+				}
+                
+           		$h->what_changed .= $wch; 	
             }
 			
 			$h->setRef($object);
+			
+			
+			if($action === 'PAYMENT_CUSTOMER_CREATE' || $action === 'PAYMENT_ADD_TO_BANK') {
+				$h->key_value1 = 0;
+				if(!empty($object->amounts)) {
+					foreach($object->amounts as $amount) {
+						$h->key_value1 += price2num($amount);
+					}
+				}
+				
+				
+			}
+			else if(strpos($action,'PAYMENT')!==false) {
+				$h->key_value1 = $object->amount;	
+			}
 			
             $h->type_action = $action;
             $h->fk_user = $user->id;

@@ -23,15 +23,25 @@
 	//dol_include_once('/core/lib/order.lib.php');
 
 
-    llxHeader('',$langs->trans('HideletedElementstory'));
-
     $type_object = GETPOST('type_object');
     $fk_object = GETPOST('id');
 
-	if($type_object == 'deletedElement') {
+	$title = $langs->trans('History');
+	
+	ob_start();
+	
+	if($type_object == 'payments') {
+		
+		dol_include_once('/history/lib/history.lib.php');
+		$head = historyAdminPrepareHead($object);
+        dol_fiche_head($head, 'payments',$langs->trans("ModuleName"),  0,  "history@history");
+		$title = $langs->trans('PaymentValidy');
+	}
+	else if($type_object == 'deletedElement') {
 		dol_include_once('/history/lib/history.lib.php');
 		$head = historyAdminPrepareHead($object);
         dol_fiche_head($head, 'delted',$langs->trans("ModuleName"),  0,  "history@history");
+		$title = $langs->trans('HideletedElementstory');
 
 	}
 	else if($type_object == 'propal') {
@@ -64,6 +74,17 @@
 
     }
 
+    else if($type_object=='invoice') {
+    	dol_include_once('/compta/facture/class/facture.class.php');
+		dol_include_once('/core/lib/invoice.lib.php');
+		$langs->load('bills');
+        $object = new Facture($db);
+        $object->fetch($fk_object);
+        $head = facture_prepare_head($object);
+        dol_fiche_head($head, 'history', $langs->trans('Bill'), 0, 'invoice');
+
+    }
+
     /*else if($type_object=='order') {
      //TODO : for dolibarr 5.0 order class will manage correctly change so can be uncomment
     	$object = new Commande($db);
@@ -89,9 +110,14 @@
         exit('Erreur, ce type d\'objet '.ucfirst($type_object).' n\'est pas traité par le module');
 
     }
+ 	
+	$tabs = ob_get_clean();
+	
+ 	llxHeader('',$title);
+ 	
+	echo $tabs;
 
-
-    $PDOdb=new TPDOdb;
+	$PDOdb=new TPDOdb;
 
     $THistory = THistory::getHistory($PDOdb, $type_object, $fk_object)  ;
 

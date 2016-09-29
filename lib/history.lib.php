@@ -43,6 +43,12 @@ function historyAdminPrepareHead()
     $h++;
 	
 	
+	$head[$h][0] = dol_buildpath("/history/history.php?type_object=payments", 1);
+    $head[$h][1] = $langs->trans("PaymentValidy");
+    $head[$h][2] = 'payments';
+    $h++;
+	
+	
     $head[$h][0] = dol_buildpath("/history/admin/history_about.php", 1);
     $head[$h][1] = $langs->trans("About");
     $head[$h][2] = 'about';

@@ -7,10 +7,11 @@ class THistory extends TObjetStd {
 
     function __construct() {
         $this->set_table(MAIN_DB_PREFIX.'history');
-        $this->add_champs('fk_object,fk_object_deleted',array('type'=>'integer','index'=>true));
+        $this->add_champs('fk_object,fk_object_deleted,entity',array('type'=>'integer','index'=>true));
         $this->add_champs('key_value1','type=float;index;');
         $this->add_champs('fk_user', 'type=entier;');
         $this->add_champs('type_object,type_action,ref,table_element', array('type'=>'string','index'=>true));
+		$this->add_champs('signature', array('type'=>'string','index'=>true, 'length'=>128)); // might be smaller
 		$this->add_champs('object', array('type'=>'array'));
         $this->add_champs('date_entry','type=date;');
         $this->add_champs('what_changed',array('type'=>'text'));
@@ -20,7 +21,7 @@ class THistory extends TObjetStd {
         $this->start();
 
 	}
-
+	
 	function show_ref() {
 		global $db,$user,$conf,$langs;
 
@@ -38,13 +39,15 @@ class THistory extends TObjetStd {
         $res = $object->fetch($this->fk_object);
 
 		if($res<=0 || $object->id == 0) {
-			return $langs->trans('WholeObjectDeleted');
+			$r = $langs->trans('WholeObjectDeleted', $langs->trans($this->type_object));
+			if(!empty($this->ref))$r.=' '.$this->ref;
+			
 		}
-
-        if(method_exists($object, 'getNomUrl')) {
-            return $object->getNomUrl(1);
+		else if(method_exists($object, 'getNomUrl')) {
+            $r = $object->getNomUrl(1);
         }
 
+		return $r;
 	}
 
 	function setRef(&$object) {
@@ -144,19 +147,48 @@ class THistory extends TObjetStd {
     }
 
     function save(&$PDOdb) {
-
+		global $conf;
         if(empty($this->fk_user) || empty($this->fk_object) || empty($this->type_action) || empty($this->what_changed)) return false;
+
+		$this->entity = $conf->entity;
+		
+		$this->signature = $this->getSignatureRecursive($PDOdb );
 
         return parent::save($PDOdb);
     }
 
-    static function getHistory(&$PDOdb, $type_object, $fk_object) {
+	
+	function getSignatureRecursive(&$PDOdb){
+		
+		if($this->type_object === 'payment') {
+			$signature = self::getSignature();	
+			
+			$THistory = array_reverse( self::getHistory($PDOdb, 'payments', 0, true) );
+			
+			foreach($THistory as &$h) {
+				$signature = md5($signature. $this->type_action . $h->signature . $h->key_value1);
+			}
+			
+			return $signature;
+		}
+		
+		return '';
+	} 
 
+    static function getHistory(&$PDOdb, $type_object, $fk_object, $justTheMinimum = false) {
+		global $conf;
         if($type_object == 'task') $type_object = 'project_task';
+		if($type_object == 'invoice')$type_object = 'facture';
 
 		if($type_object=='deletedElement') {
 			$sql="SELECT rowid FROM ".MAIN_DB_PREFIX."history
-	         WHERE type_action LIKE '%DELETE%'
+	         WHERE  entity=".$conf->entity." AND  type_action LIKE '%DELETE%'
+	         ORDER BY date_entry DESC";
+
+		}
+		else if($type_object=='payments') {
+			$sql="SELECT rowid,signature,key_value1 FROM ".MAIN_DB_PREFIX."history
+	         WHERE entity=".$conf->entity." AND  type_action LIKE '%PAYMENT%'
 	         ORDER BY date_entry DESC";
 
 		}
@@ -164,7 +196,6 @@ class THistory extends TObjetStd {
 			$sql="SELECT rowid FROM ".MAIN_DB_PREFIX."history
 	         WHERE type_object='".$type_object."' AND fk_object=".(int)$fk_object."
 	         ORDER BY date_entry DESC ";
-
 
 		}
 
@@ -174,10 +205,17 @@ class THistory extends TObjetStd {
         $TRes=array();
         foreach($Tab as $row){
 
-            $h=new THistory;
-            $h->load($PDOdb, $row->rowid);
-
-            $TRes[] = $h;
+			if($justTheMinimum) {
+				$TRes[] = $row;
+			}
+			else{
+		        $h=new THistory;
+		        $h->load($PDOdb, $row->rowid);
+			
+	
+	            $TRes[] = $h;
+				
+			}
 
         }
 
@@ -258,5 +296,21 @@ class THistory extends TObjetStd {
 
 
 	}
+	
+	static function getSignature() {
+		global $db,$conf,$mysoc;
+		
+		if(empty($conf->global->HISTORY_DOLIBARR_SIGNATURE)) {
+			
+			$my_signature = md5(print_r($mysoc,true).time().rand(0,1000)); 
+			
+			dolibarr_set_const($db, 'HISTORY_DOLIBARR_SIGNATURE', $my_signature, '',0,'Signature numérique', $conf->entity);
+			
+			$conf->global->HISTORY_DOLIBARR_SIGNATURE = $my_signature;
+		}
+		
+		return $conf->global->HISTORY_DOLIBARR_SIGNATURE;
+	}
+
 
 }
