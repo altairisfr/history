@@ -9,7 +9,7 @@
 	
 	$PDOdb=new TPDOdb;
 	
-	$THistory =  THistory::getHistory($PDOdb, 'payments_just_certified', 0, false,0, 'ASC') ;
+	$THistory =  THistory::getHistory($PDOdb, 'payments_not_certified', 0, false,0, 'ASC') ;
 	
 	$signature=THistory::getSignature();
 	
@@ -18,7 +18,7 @@
 		$url = $conf->global->HISTORY_AUTHORITY_URL.'/history/script/authority.php?s='.$signature.'&b='.$h->signature;
 		
 		$res = file_get_contents($url);
-		
+		echo $h->signature. ' '.$res.'<br>';
 		if($res === 'blockalreadyadded' || $res === 'blockadded') {
 			
 			$h->is_certified = 1;

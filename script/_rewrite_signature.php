@@ -1,6 +1,6 @@
 <?php
 
-	require 'config.php';
+	require '../config.php';
 	
 	dol_include_once('/history/class/history.class.php');
 	

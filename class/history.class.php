@@ -154,17 +154,30 @@ class THistory extends TObjetStd {
         return parent::save($PDOdb);
     }
 
+	private function  updateValue(&$PDOdb) {
+		
+		$sql="SELECT amount FROM ".MAIN_DB_PREFIX."paiement WHERE rowid=".$this->fk_object;
+		
+		$PDOdb->Execute($sql);
+		
+		if($obj = $PDOdb->Get_line()) {
+			$this->key_value1 = (double)$obj->amount;
+		}
+		
+	}
 	
 	function getSignatureRecursive(&$PDOdb){
 		
 		if($this->type_object === 'payment') {
 			$signature = md5( $this->type_action . self::getSignature() . $this->key_value1  );	
 			
-			$THistory =  self::getHistory($PDOdb, 'payments', 0, true,0, 'ASC') ;
+			$THistory =  self::getHistory($PDOdb, 'payments', 0, false,0, 'ASC') ;
 			//var_dump($THistory);
 			foreach($THistory as $h) {
 				
 				if($this->getId()>0 && $h->rowid == $this->getId()) break; // on arrête sur un enregistrement précis pour recalculer une signature
+				
+				$h->updateValue($PDOdb);
 				
 				$signature = md5($signature. $this->type_action . $h->signature . $h->key_value1);
 			}
