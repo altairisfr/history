@@ -123,7 +123,7 @@ class InterfaceHistorytrigger
             if(!defined('INC_FROM_DOLIBARR')) define('INC_FROM_DOLIBARR',true);
             if(!dol_include_once('/history/config.php')) return 0;
             
-			
+			if(!class_exists('THistory')) return 0;
 			
             $PDOdb=new TPDOdb;
             

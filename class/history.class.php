@@ -156,12 +156,17 @@ class THistory extends TObjetStd {
 
 	private function  updateValue(&$PDOdb) {
 		
-		$sql="SELECT amount FROM ".MAIN_DB_PREFIX."paiement WHERE rowid=".$this->fk_object;
 		
-		$PDOdb->Execute($sql);
-		
-		if($obj = $PDOdb->Get_line()) {
-			$this->key_value1 = (double)$obj->amount;
+		if($this->type_action === 'PAYMENT_CUSTOMER_CREATE' 
+		|| $this->type_action === 'PAYMENT_ADD_TO_BANK') {
+			$sql="SELECT amount FROM ".MAIN_DB_PREFIX."paiement WHERE rowid=".$this->fk_object;
+			
+			$PDOdb->Execute($sql);
+			
+			if($obj = $PDOdb->Get_line()) {
+			//	var_dump($this->key_value1,$obj->amount, $this->fk_object, $this->type_action);exit;
+				$this->key_value1 = (double)$obj->amount;
+			}
 		}
 		
 	}
@@ -172,9 +177,9 @@ class THistory extends TObjetStd {
 			$signature = md5( $this->type_action . self::getSignature() . $this->key_value1  );	
 			
 			$THistory =  self::getHistory($PDOdb, 'payments', 0, false,0, 'ASC') ;
-			//var_dump($THistory);
+			//var_dump($THistory);exit;
 			foreach($THistory as $h) {
-				
+				//var_dump($h);exit;
 				if($this->getId()>0 && $h->rowid == $this->getId()) break; // on arrête sur un enregistrement précis pour recalculer une signature
 				
 				$h->updateValue($PDOdb);
@@ -198,7 +203,10 @@ class THistory extends TObjetStd {
 	}
 
     static function getHistory(&$PDOdb, $type_object, $fk_object, $justTheMinimum = false, $limit = 0, $order = 'DESC') {
-		global $conf;
+		global $conf,$TCacheHistory;
+		
+		if(empty($TCacheHistory)) $TCacheHistory=array();
+		
         if($type_object == 'task') $type_object = 'project_task';
 		if($type_object == 'invoice')$type_object = 'facture';
 
@@ -209,19 +217,19 @@ class THistory extends TObjetStd {
 
 		}
 		else if($type_object=='payments') {
-			$sql="SELECT rowid,signature,key_value1 FROM ".MAIN_DB_PREFIX."history
+			$sql="SELECT * FROM ".MAIN_DB_PREFIX."history
 	         WHERE entity=".$conf->entity." AND  type_action LIKE '%PAYMENT%'
 	         ORDER BY date_entry ".$order;
 
 		}
 		else if($type_object=='payments_not_certified') {
-			$sql="SELECT rowid,signature,key_value1 FROM ".MAIN_DB_PREFIX."history
+			$sql="SELECT rowid,signature,key_value1,type_action FROM ".MAIN_DB_PREFIX."history
 	         WHERE entity=".$conf->entity." AND  type_action LIKE '%PAYMENT%' AND is_certified = 0
 	         ORDER BY date_entry ".$order;
 
 		}
 		else if($type_object=='payments_just_certified') {
-			$sql="SELECT rowid,signature,key_value1 FROM ".MAIN_DB_PREFIX."history
+			$sql="SELECT rowid,signature,key_value1,type_action FROM ".MAIN_DB_PREFIX."history
 	         WHERE entity=".$conf->entity." AND  type_action LIKE '%PAYMENT%' AND is_certified = 1
 	         ORDER BY date_entry ".$order;
 
@@ -241,15 +249,21 @@ class THistory extends TObjetStd {
         $TRes=array();
         foreach($Tab as $row){
 
-			if($justTheMinimum) {
-				$TRes[] = $row;
+			if($justTheMinimum) { //TODO marche pas
+				$h=new THistory;
+				$h->set_values($row);
+				$TRes[] = $h;
 			}
 			else{
-		        $h=new THistory;
-		        $h->load($PDOdb, $row->rowid);
-			
-	
-	            $TRes[] = $h;
+				
+				if(!isset($TCacheHistory[$row->rowid])) {
+					$h=new THistory;
+		        	$h->load($PDOdb, $row->rowid);
+					
+					$TCacheHistory[$row->rowid] = $h;
+				}
+				
+			    $TRes[] = $TCacheHistory[$row->rowid];
 				
 			}
 
