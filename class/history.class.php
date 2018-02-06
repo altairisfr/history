@@ -327,12 +327,13 @@ class DeepHistory extends SeedObject {
 		global $db;
 		if(is_object($object) && !empty($object->table_element)){
 
-			$table = $h->table_object;
+			$table = $object->table_element;
 			$backup_table = $table.'_deletedhistory';
-			
 			$obj = new SeedObject($db);
-			$obj->table_object= $table;
+			$obj->table_element= $table;
+//var_dump( $table,$backup_table,$obj->table_object);
 			$obj->init_vars_by_db();
+
 			$obj->fetch( $object->id );
 			
 			$obj2 = clone $obj;
