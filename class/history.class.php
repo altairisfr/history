@@ -324,7 +324,7 @@ class DeepHistory extends SeedObject {
 	
 
 	static function makeCopy(&$object) {
-		global $db;
+		global $db, $user;
 		if(is_object($object) && !empty($object->table_element)){
 
 			$table = $object->table_element;
@@ -336,15 +336,19 @@ class DeepHistory extends SeedObject {
 
 			$obj->fetch( $object->id );
 			
-			$obj2 = clone $obj;
-			
+			$obj2 = unserialize(serialize( $obj ));
+			$obj2->db = & $db;
+
 			$db->query("set foreign_key_checks = 0");
 			
-			$obj2->table_object= $backup_table;
+			$obj2->table_element = $backup_table;
 			$obj2->init_db_by_vars();
 			$obj2->date_creation = $obj2->tms = time();
 			
-			$obj2->replaceCommon($user);
+			//$obj2->replaceCommon($user);
+			$db->query("INSERT INTO ".$backup_table." (rowid) VALUES (".$object->id.")");
+			$obj2->create($user);
+
 
 		}
 
