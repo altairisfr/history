@@ -86,6 +86,10 @@ class DeepHistory extends SeedObject {
             if(!is_array($v) && !is_object($v))
             {
 
+				if (isset($conf->global->HISTORY_FIELDS) && !in_array($new0->element .':'.$v, explode(',',$conf->global->HISTORY_FIELDS))) {
+					continue;
+				}
+
 				if ($checkArrayOptions)
 				{
 					if($oldO[$k] !== $v && (!empty($v) || (!empty($oldO[$k]) &&  $oldO[$k] !== '0.000') ) )
