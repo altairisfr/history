@@ -81,32 +81,36 @@ class DeepHistory extends SeedObject {
 
         $diff = '';
 
+        global $history_old_object, $conf;
+
         foreach($newO as $k=>$v)
         {
             if(!is_array($v) && !is_object($v))
             {
-
-				if (isset($conf->global->HISTORY_FIELDS) && !in_array($new0->element .':'.$v, explode(',',$conf->global->HISTORY_FIELDS))) {
-					continue;
-				}
-
 				if ($checkArrayOptions)
 				{
+					if (isset($conf->global->HISTORY_FIELDS) && !in_array($history_old_object->element .':'.$k, explode(',',$conf->global->HISTORY_FIELDS))) {
+						continue;
+					}
 					if($oldO[$k] !== $v && (!empty($v) || (!empty($oldO[$k]) &&  $oldO[$k] !== '0.000') ) )
 	            	{
+						// commented by christophe battareldie($history_old_object->element .':'.$k);
 	            		// substr remove options_
 	                    $diff.=substr($k, 8).' : '.$oldO[$k].' => '.$v."\n";
 	                }
 				}
 				else
 				{
-					//isset($oldO->{$k}) => renvoi false sur $oldO->zip car défini à null
+					if (isset($conf->global->HISTORY_FIELDS) && !in_array($history_old_object->element .':'.$k, explode(',',$conf->global->HISTORY_FIELDS))) {
+						continue;
+					}
 	                if(property_exists($oldO, $k) // vérifie que l'attribut exist
 	                	&& !is_object($oldO->{$k})
 	                	&& $oldO->{$k} !== $v
 	                	&& (!empty($v) || (!empty($oldO->{$k}) &&  $oldO->{$k} !== '0.000' )   )
 						)
 	            	{
+						// commented by christophe battareldie($history_old_object->element .':'.$k);
 	                    $diff.=$k.' : '.$oldO->{$k}.' => '.$v."\n";
 	                }
 				}

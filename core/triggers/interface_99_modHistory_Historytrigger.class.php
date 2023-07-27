@@ -128,7 +128,7 @@ class InterfaceHistorytrigger extends DolibarrTriggers
        if(!empty($object->element)) {
 
             if(!defined('INC_FROM_DOLIBARR')) define('INC_FROM_DOLIBARR',true);
-            if(!dol_include_once('/history/config.php')) return 0;
+            if(!dol_include_once('/history/config.php') && !dol_include_once('/history/class/history.class.php')) return 0;
 
             $h=new DeepHistory($db);
 
