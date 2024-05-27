@@ -18,7 +18,7 @@ class DeepHistory extends SeedObject {
         		,'fk_user'=>array('type'=>'integer')
         		,'type_object'=>array('type'=>'string','length'=>50,'index'=>true)
         		,'type_action'=>array('type'=>'string','length'=>50,'index'=>true)
-        		,'ref'=>array('type'=>'string','length'=>50,'index'=>true)
+        		,'ref'=>array('type'=>'string','length'=>50,'index'=>true, 'notnull' =>1)
         		,'table_object'=>array('type'=>'string','length'=>50,'index'=>true)
         		,'object'=>array('type'=>'string')
         		,'date_entry'=>array('type'=>'date')
