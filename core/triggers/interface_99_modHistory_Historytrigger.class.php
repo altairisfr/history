@@ -189,9 +189,9 @@ class InterfaceHistorytrigger extends DolibarrTriggers
 
             if (!empty($h->what_changed) && !empty($action)) $res = $h->create($user);
 
-            if ($res <= 0) {
-                //var_dump($h);exit;
-            }
+            // if ($res <= 0) {
+            //     //var_dump($h);exit;
+            // }
         } else {
             switch ($action) {
                 case 'STOCK_MOVEMENT':
