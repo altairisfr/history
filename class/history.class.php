@@ -101,7 +101,7 @@ class DeepHistory extends SeedObject {
 				}
 				else
 				{
-					if (isset($conf->global->HISTORY_FIELDS) && !in_array($history_old_object->element .':'.$k, explode(',',$conf->global->HISTORY_FIELDS))) {
+					if (isset($conf->global->HISTORY_FIELDS) && !empty($history_old_object->element) && !in_array($history_old_object->element .':'.$k, explode(',',$conf->global->HISTORY_FIELDS))) {
 						continue;
 					}
 	                if(property_exists($oldO, $k) // vérifie que l'attribut exist
